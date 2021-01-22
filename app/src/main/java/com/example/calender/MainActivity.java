@@ -25,12 +25,12 @@ import java.util.Calendar;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private int selectedDate = -1;
+    private long selectedDate = -1;
     private int selectedScheduleId;
-    private int todayCellId;
+    private long todayCellTag;
     private int[] scheduleIds = { R.id.schedule1, R.id.schedule2, R.id.schedule3, R.id.schedule4,
             R.id.schedule5, R.id.schedule6, R.id.schedule7, R.id.schedule8 };
-    private List<Integer> calendarIndex = new ArrayList<Integer>();
+    private List<Long> calendarTags = new ArrayList<>();
     private ScheduleService scheduleService;
     private ViewGroup container;
 
@@ -43,76 +43,74 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         container = findViewById(R.id.container);
         scheduleService = new ScheduleService(this);
 
-        setCalender();
+        renderCalender();
         bindEvents();
         resetCurrentSchedule();
         markSchedule();
         updateScheduleList();
     }
 
-    private void setCalender() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.setTimeInMillis(calendar.getTimeInMillis() / 1000 * 1000);
+    private void renderCalender() {
+        Calendar calendar = today();
+        int last = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        TableRow tableRow = null;
 
-        todayCellId = (int)(calendar.getTimeInMillis());
-        Log.d(" wtf", todayCellId + "");
+        todayCellTag = calendar.getTimeInMillis();
 
-        TableRow tableRow = new TableRow(this);
+        for(int date = 1; date <= last; date++) {
+            calendar.set(Calendar.DATE, date);
 
-        for(int i = 1; i <= calendar.getActualMaximum(Calendar.DAY_OF_MONTH); i++) {
-            calendar.set(Calendar.DATE, i);
-
-            if(calendar.get( Calendar.DAY_OF_WEEK ) == Calendar.SUNDAY || calendar.get(Calendar.DATE) == 1) {
+            if(calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY || calendar.get(Calendar.DATE) == 1) {
                 tableRow = new TableRow(this);
                 TableLayout.LayoutParams layoutParams = new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1);
                 tableRow.setBackgroundColor(Color.parseColor("#f7f7f7"));
                 container.addView(tableRow, layoutParams);
             }
 
-            LinearLayout linearLayout = new LinearLayout(this);
-            TextView dateView= new TextView(this);
-            TextView scheduleMark = new TextView(this);
+            if(tableRow == null) continue;
 
+            LinearLayout linearLayout = new LinearLayout(this);
             TableRow.LayoutParams linearLayoutParams = new TableRow.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
             linearLayout.setBackground(getResources().getDrawable(R.drawable.ic_launcher_background, null));
             linearLayout.setOrientation(LinearLayout.VERTICAL);
             linearLayout.setBackground(ContextCompat.getDrawable(this, R.drawable.layout_border));
-            linearLayout.setTag((int)(calendar.getTimeInMillis()));
-            Log.d(" wtf", (int)(calendar.getTimeInMillis()) + "");
-            calendarIndex.add((int)(calendar.getTimeInMillis()));
+            linearLayout.setTag(calendar.getTimeInMillis());
+            calendarTags.add(calendar.getTimeInMillis());
+            if(calendar.get(Calendar.DATE) == 1) linearLayoutParams.column = calendar.get(Calendar.DAY_OF_WEEK) - 1;
 
-            if(calendar.get(Calendar.DATE) == 1) {
-                linearLayoutParams.column = calendar.get(Calendar.DAY_OF_WEEK) - 1;
-            }
-
+            TextView dateView = new TextView(this);
             LinearLayout.LayoutParams dateViewParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 3);
             dateView.setGravity(Gravity.CENTER);
             dateView.setTag("day");
-            dateView.setTextColor(Color.parseColor(todayCellId == (int)calendar.getTimeInMillis() ? "#FF1B19" : "#000000"));
+            dateView.setTextColor(Color.parseColor(todayCellTag == calendar.getTimeInMillis() ? "#FF1B19" : "#000000"));
             dateView.setTextSize(getResources().getDimension(R.dimen.dateFontSize));
-            dateView.setText(i + "");
+            dateView.setText(String.valueOf(date));
 
+            TextView scheduleMarkView = new TextView(this);
             LinearLayout.LayoutParams scheduleMarkParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1);
-            scheduleMark.setGravity(Gravity.CENTER);
-            scheduleMark.setTag("schedule");
-            scheduleMark.setTextColor(Color.parseColor("#D3CFCF"));
-            scheduleMark.setText("");
-
+            scheduleMarkView.setGravity(Gravity.CENTER);
+            scheduleMarkView.setTag("schedule");
+            scheduleMarkView.setTextColor(Color.parseColor("#D3CFCF"));
+            scheduleMarkView.setText("");
 
             tableRow.addView(linearLayout, linearLayoutParams);
             linearLayout.addView(dateView, dateViewParams);
-            linearLayout.addView(scheduleMark, scheduleMarkParams);
-
-            calendar.set(Calendar.DATE, i);
+            linearLayout.addView(scheduleMarkView, scheduleMarkParams);
         }
     }
 
+    private Calendar today() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.setTimeInMillis(calendar.getTimeInMillis() / 1000 * 1000);
+        return calendar;
+    }
+
     private void bindEvents() {
-        for(int i = 0; i < calendarIndex.size(); i++) {
-            container.findViewWithTag(calendarIndex.get(i)).setOnClickListener(this);
+        for(int i = 0; i < calendarTags.size(); i++) {
+            container.findViewWithTag(calendarTags.get(i)).setOnClickListener(this);
         }
 
         for(int i = 0; i < scheduleIds.length; i++) {
@@ -139,15 +137,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             findViewById(R.id.add).setEnabled(true);
 
-            selectedDate = (int)view.getTag();
+            selectedDate = (long)view.getTag();
 
             updateScheduleList();
         }
         else if(view.findViewWithTag("title") != null) {
             if(view.getTag() == null) return;
 
-            int id = (int)view.getTag();
-            Schedule schedule = scheduleService.findById(id);
+            Schedule schedule = scheduleService.findById((int)view.getTag());
 
             if(schedule == null) return;
 
@@ -213,8 +210,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         List<Schedule> schedules = scheduleService.list();
 
         for(Schedule schedule : schedules) {
-            Log.d(" wtf", schedule.toString());
-            Log.d(" wtf", calendarIndex.get(19).toString());
             ((TextView)container.findViewWithTag(schedule.getDate()).findViewWithTag("schedule")).setText("●");
         }
     }
@@ -231,20 +226,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void resetScheduleMark() {
-        for(int i = 0; i < calendarIndex.size(); i++) {
-            ((TextView)container.findViewWithTag(calendarIndex.get(i)).findViewWithTag("schedule")).setText("");
+        for(int i = 0; i < calendarTags.size(); i++) {
+            ((TextView)container.findViewWithTag(calendarTags.get(i)).findViewWithTag("schedule")).setText("");
         }
     }
 
     private void selectCurrentDay(View view) {
         TextView day = view.findViewWithTag("day");
-        int backResId = (int)view.getTag() == todayCellId ? R.drawable.layout_today : R.drawable.layout_oval;
+        int backResId = (long)view.getTag() == todayCellTag ? R.drawable.layout_today : R.drawable.layout_oval;
         changeCellStyle(day, backResId, Color.rgb(0xff, 0xff, 0xff));
     }
 
     private void clearPreviousDay() {
         TextView target = container.findViewWithTag(selectedDate).findViewWithTag("day");
-        int color = selectedDate == todayCellId ? Color.rgb(0xff, 0x1b, 0x19) : Color.rgb(0x00, 0x00, 0x00);
+        int color = selectedDate == todayCellTag ? Color.rgb(0xff, 0x1b, 0x19) : Color.rgb(0x00, 0x00, 0x00);
         changeCellStyle(target, R.drawable.layout_border, color);
     }
 

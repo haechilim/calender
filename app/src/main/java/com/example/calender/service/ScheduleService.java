@@ -48,7 +48,7 @@ public class ScheduleService extends SQLiteOpenHelper {
         Cursor cursor = database.rawQuery("select * from ScheduleTable where id = " + id + ";", null);
         while (cursor.moveToNext()) {
             schedule.setId(cursor.getInt(0));
-            schedule.setDate(cursor.getInt(1));
+            schedule.setDate(cursor.getLong(1));
             schedule.setTitle(cursor.getString(2));
             schedule.setStartTime(cursor.getString(3));
             schedule.setEndTime(cursor.getString(4));
@@ -58,13 +58,13 @@ public class ScheduleService extends SQLiteOpenHelper {
         return schedule;
     }
 
-    public List<Schedule> findByDate(int date) {
-        List<Schedule> result = new ArrayList<Schedule>();
+    public List<Schedule> findByDate(long date) {
+        List<Schedule> result = new ArrayList<>();
 
         database = this.getWritableDatabase();
         Cursor cursor = database.rawQuery("select * from ScheduleTable where date = " + date + ";", null);
         while (cursor.moveToNext()) {
-            result.add(new Schedule(cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3), cursor.getString(4)));
+            result.add(new Schedule(cursor.getInt(0), cursor.getLong(1), cursor.getString(2), cursor.getString(3), cursor.getString(4)));
         }
         database.close();
 
@@ -77,7 +77,7 @@ public class ScheduleService extends SQLiteOpenHelper {
         database = this.getWritableDatabase();
         Cursor cursor = database.rawQuery("select * from ScheduleTable;", null);
         while (cursor.moveToNext()) {
-            result.add(new Schedule(cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3), cursor.getString(4)));
+            result.add(new Schedule(cursor.getInt(0), cursor.getLong(1), cursor.getString(2), cursor.getString(3), cursor.getString(4)));
         }
         database.close();
 
@@ -86,7 +86,7 @@ public class ScheduleService extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("create table ScheduleTable(id integer primary key autoincrement not null, date integer not null, title char(20) not null, startTime char(10) not null, endTime char(10) not null);");
+        db.execSQL("create table ScheduleTable(id integer primary key autoincrement not null, date long not null, title char(20) not null, startTime char(10) not null, endTime char(10) not null);");
     }
 
     @Override

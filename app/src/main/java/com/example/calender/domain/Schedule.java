@@ -2,14 +2,14 @@ package com.example.calender.domain;
 
 public class Schedule {
     private int id;
-    private int date;
+    private long date;
     private String title;
     private String startTime;
     private String endTime;
 
     public Schedule() {}
 
-    public Schedule(int id, int date, String title, String startTime, String endTime) {
+    public Schedule(int id, long date, String title, String startTime, String endTime) {
         this.id = id;
         this.date = date;
         this.title = title;
@@ -17,7 +17,7 @@ public class Schedule {
         this.endTime = endTime;
     }
 
-    public Schedule(int date, String title, String startTime, String endTime) {
+    public Schedule(long date, String title, String startTime, String endTime) {
         this.date = date;
         this.title = title;
         this.startTime = startTime;
@@ -32,11 +32,11 @@ public class Schedule {
         this.id = id;
     }
 
-    public int getDate() {
+    public long getDate() {
         return date;
     }
 
-    public void setDate(int date) {
+    public void setDate(long date) {
         this.date = date;
     }
 
