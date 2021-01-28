@@ -1,15 +1,18 @@
 package com.example.calender;
 
+import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -20,11 +23,13 @@ import com.example.calender.helper.Constants;
 
 public class ScheduleActivity extends AppCompatActivity implements TextWatcher {
     private EditText editTextTitle;
-    private EditText editTextStart;
-    private EditText editTextEnd;
+    private TextView editTextStart;
+    private TextView editTextEnd;
     private Button buttonConfirm;
     private Button buttonCancel;
     private Button buttonDeleteSchedule;
+    private int startTime;
+    private int endTime;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,6 +55,36 @@ public class ScheduleActivity extends AppCompatActivity implements TextWatcher {
 
         ((TextView)findViewById(R.id.explan)).setText(isNewSchedule ? "새로운 일정" : "일정 수정");
         findViewById(R.id.deleteSchedule).setVisibility(isNewSchedule ? View.INVISIBLE : View.VISIBLE);
+
+        editTextStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                TimePickerDialog timePickerDialog = new TimePickerDialog(ScheduleActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                        editTextStart.setText(hourOfDay + ":" + minute);
+                        startTime = hourOfDay * 100 + minute;
+                        updateUi();
+                    }
+                }, 0, 0, true);
+                timePickerDialog.show();
+            }
+        });
+
+        editTextEnd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TimePickerDialog timePickerDialog = new TimePickerDialog(ScheduleActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                        editTextEnd.setText(hourOfDay + ":" + minute);
+                        endTime = hourOfDay * 100 + minute;
+                        updateUi();
+                    }
+                }, 0, 0, true);
+                timePickerDialog.show();
+            }
+        });
 
         buttonDeleteSchedule.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -102,7 +137,8 @@ public class ScheduleActivity extends AppCompatActivity implements TextWatcher {
     public void afterTextChanged(Editable s) {}
 
     private void updateUi() {
-        boolean enabled = !editTextTitle.getText().toString().trim().isEmpty() && !editTextStart.getText().toString().trim().isEmpty() && !editTextEnd.getText().toString().trim().isEmpty();
+        boolean isContradiction = startTime < endTime;
+        boolean enabled = !editTextTitle.getText().toString().trim().isEmpty() && isContradiction;
         buttonConfirm.setEnabled(enabled);
         buttonConfirm.setTextColor(enabled ? Color.rgb(0xFF, 0x1B, 0x19) : Color.rgb(0xB1, 0xAB, 0xAB));
     }

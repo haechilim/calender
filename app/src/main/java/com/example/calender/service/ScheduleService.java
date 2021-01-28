@@ -21,8 +21,6 @@ public class ScheduleService extends SQLiteOpenHelper {
     }
 
     public void add(Schedule schedule) {
-        Log.d("wtf", schedule.toString());
-
         database = this.getWritableDatabase();
         database.execSQL("insert into ScheduleTable(date, title, startTime, endTime)" +
                 " values(" + schedule.getDate() + ", '" + schedule.getTitle() + "', '" + schedule.getStartTime() + "', '" + schedule.getEndTime() + "');");

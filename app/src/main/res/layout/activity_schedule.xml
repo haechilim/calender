@@ -87,7 +87,7 @@
                     android:text="시작"
                     android:textColor="#000000" />
 
-                <EditText
+                <TextView
                     android:id="@+id/editTextStart"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
@@ -98,6 +98,7 @@
                     android:gravity="right|center_vertical"
                     android:inputType="textPersonName"
                     android:paddingRight="5dp"
+                    android:tag="startTime"
                     android:textSize="14sp" />
             </LinearLayout>
 
@@ -118,7 +119,7 @@
                     android:text="종료"
                     android:textColor="#000000" />
 
-                <EditText
+                <TextView
                     android:id="@+id/editTextEnd"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
@@ -129,6 +130,7 @@
                     android:gravity="right|center_vertical"
                     android:inputType="textPersonName"
                     android:paddingRight="5dp"
+                    android:tag="endTime"
                     android:textSize="14sp" />
             </LinearLayout>
 

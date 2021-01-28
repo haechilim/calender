@@ -14,7 +14,7 @@
         tools:layout_editor_absoluteX="57dp"
         tools:layout_editor_absoluteY="16dp">
 
-        <TableLayout
+        <com.example.calender.CalenderView
             android:id="@+id/container"
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -107,7 +107,7 @@
                     android:textColor="#FF1B19" />
 
                 <TextView
-                    android:id="@+id/textView13"
+                    android:id="@+id/month"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_column="5"
@@ -116,7 +116,7 @@
                     android:textColor="#FF1B19"
                     android:textSize="20sp" />
             </TableRow>
-        </TableLayout>
+        </com.example.calender.CalenderView>
 
         <ScrollView
             android:layout_width="match_parent"

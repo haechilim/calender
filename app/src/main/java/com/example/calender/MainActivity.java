@@ -1,12 +1,15 @@
 package com.example.calender;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -24,7 +27,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+// TODO 날짜 EditText -> TextView !
+// TODO TimePickerDialog !
+// TODO 시간이 역전되면 저장 못하게 !
+// TODO swipe로 월 변경
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    private int currentMonth;
+    private int tableRowCount;
     private long selectedDate = -1;
     private int selectedScheduleId;
     private long todayCellTag;
@@ -32,7 +41,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             R.id.schedule5, R.id.schedule6, R.id.schedule7, R.id.schedule8 };
     private List<Long> calendarTags = new ArrayList<>();
     private ScheduleService scheduleService;
-    private ViewGroup container;
+    private static ViewGroup container;
+    public static Context context;
 
 
     @Override
@@ -40,31 +50,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        context = this;
         container = findViewById(R.id.container);
         scheduleService = new ScheduleService(this);
 
-        renderCalender();
+        renderCalender(0, findViewById(R.id.container));
         bindEvents();
         resetCurrentSchedule();
         markSchedule();
         updateScheduleList();
     }
 
-    private void renderCalender() {
+    public void renderCalender(int differenceMonth, ViewGroup target) {
+        container = target;
         Calendar calendar = today();
+        todayCellTag = calendar.getTimeInMillis();
+
+        if(differenceMonth != 0) {
+            container.removeViews(2, tableRowCount);
+            calendar.set(Calendar.MONTH, currentMonth + differenceMonth);
+            tableRowCount = 0;
+        }
+
+        TextView markMonth = findViewById(R.id.month);
+        markMonth.setText((calendar.get(Calendar.MONTH) + 1) + "월");
+        currentMonth += differenceMonth;
+
         int last = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
         TableRow tableRow = null;
-
-        todayCellTag = calendar.getTimeInMillis();
 
         for(int date = 1; date <= last; date++) {
             calendar.set(Calendar.DATE, date);
 
             if(calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY || calendar.get(Calendar.DATE) == 1) {
-                tableRow = new TableRow(this);
+                tableRow = new TableRow(context);
                 TableLayout.LayoutParams layoutParams = new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1);
                 tableRow.setBackgroundColor(Color.parseColor("#f7f7f7"));
                 container.addView(tableRow, layoutParams);
+                tableRowCount++;
             }
 
             if(tableRow == null) continue;
