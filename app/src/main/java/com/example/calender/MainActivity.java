@@ -1,15 +1,12 @@
 package com.example.calender;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -32,8 +29,6 @@ import java.util.List;
 // TODO 시간이 역전되면 저장 못하게 !
 // TODO swipe로 월 변경
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private int currentMonth;
-    private int tableRowCount;
     private long selectedDate = -1;
     private int selectedScheduleId;
     private long todayCellTag;
@@ -41,40 +36,57 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             R.id.schedule5, R.id.schedule6, R.id.schedule7, R.id.schedule8 };
     private List<Long> calendarTags = new ArrayList<>();
     private ScheduleService scheduleService;
-    private static ViewGroup container;
-    public static Context context;
-
+    private static CalenderView calendarView;
+    Calendar calendar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        context = this;
-        container = findViewById(R.id.container);
+        calendar = today();
+
+        calendarView = findViewById(R.id.container);
         scheduleService = new ScheduleService(this);
 
-        renderCalender(0, findViewById(R.id.container));
+        calendarView.setMainActivity(this);
+
+        drawCalender();
         bindEvents();
         resetCurrentSchedule();
         markSchedule();
         updateScheduleList();
     }
 
-    public void renderCalender(int differenceMonth, ViewGroup target) {
-        container = target;
-        Calendar calendar = today();
-        todayCellTag = calendar.getTimeInMillis();
+    public void nextMonth() {
+        calendar.add(Calendar.MONTH, 1);
+        redrawCalendar();
+    }
 
-        if(differenceMonth != 0) {
-            container.removeViews(2, tableRowCount);
-            calendar.set(Calendar.MONTH, currentMonth + differenceMonth);
-            tableRowCount = 0;
-        }
+    public void prevMonth() {
+        calendar.add(Calendar.MONTH, -1);
+        redrawCalendar();
+    }
+
+    private void redrawCalendar() {
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                clearCalendar();
+                drawCalender();
+            }
+        });
+    }
+
+    private void clearCalendar() {
+        calendarView.removeViews(2, calendarView.getChildCount() - 2);
+    }
+
+    private void drawCalender() {
+        selectedDate = -1;
 
         TextView markMonth = findViewById(R.id.month);
         markMonth.setText((calendar.get(Calendar.MONTH) + 1) + "월");
-        currentMonth += differenceMonth;
 
         int last = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
         TableRow tableRow = null;
@@ -83,11 +95,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             calendar.set(Calendar.DATE, date);
 
             if(calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY || calendar.get(Calendar.DATE) == 1) {
-                tableRow = new TableRow(context);
+                tableRow = new TableRow(this);
                 TableLayout.LayoutParams layoutParams = new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1);
                 tableRow.setBackgroundColor(Color.parseColor("#f7f7f7"));
-                container.addView(tableRow, layoutParams);
-                tableRowCount++;
+                calendarView.addView(tableRow, layoutParams);
             }
 
             if(tableRow == null) continue;
@@ -119,6 +130,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             tableRow.addView(linearLayout, linearLayoutParams);
             linearLayout.addView(dateView, dateViewParams);
             linearLayout.addView(scheduleMarkView, scheduleMarkParams);
+
+            linearLayout.setOnClickListener(this);
         }
     }
 
@@ -128,14 +141,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.setTimeInMillis(calendar.getTimeInMillis() / 1000 * 1000);
+        todayCellTag = calendar.getTimeInMillis();
         return calendar;
     }
 
     private void bindEvents() {
-        for(int i = 0; i < calendarTags.size(); i++) {
-            container.findViewWithTag(calendarTags.get(i)).setOnClickListener(this);
-        }
-
         for(int i = 0; i < scheduleIds.length; i++) {
             findViewById(scheduleIds[i]).setOnClickListener(this);
         }
@@ -205,7 +215,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void startScheduleActivity(Intent intent) {
-        intent.setClass(MainActivity.this, ScheduleActivity.class);
+        intent.setClass(this, ScheduleActivity.class);
         startActivityForResult(intent, 100);
     }
 
@@ -233,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         List<Schedule> schedules = scheduleService.list();
 
         for(Schedule schedule : schedules) {
-            ((TextView)container.findViewWithTag(schedule.getDate()).findViewWithTag("schedule")).setText("●");
+            ((TextView) calendarView.findViewWithTag(schedule.getDate()).findViewWithTag("schedule")).setText("●");
         }
     }
 
@@ -250,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void resetScheduleMark() {
         for(int i = 0; i < calendarTags.size(); i++) {
-            ((TextView)container.findViewWithTag(calendarTags.get(i)).findViewWithTag("schedule")).setText("");
+            ((TextView) calendarView.findViewWithTag(calendarTags.get(i)).findViewWithTag("schedule")).setText("");
         }
     }
 
@@ -261,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void clearPreviousDay() {
-        TextView target = container.findViewWithTag(selectedDate).findViewWithTag("day");
+        TextView target = calendarView.findViewWithTag(selectedDate).findViewWithTag("day");
         int color = selectedDate == todayCellTag ? Color.rgb(0xff, 0x1b, 0x19) : Color.rgb(0x00, 0x00, 0x00);
         changeCellStyle(target, R.drawable.layout_border, color);
     }

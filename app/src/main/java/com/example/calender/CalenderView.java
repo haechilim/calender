@@ -9,6 +9,8 @@ import android.widget.TableLayout;
 public class CalenderView extends TableLayout {
     private float x;
     private float y;
+    private boolean isActionDown = false;
+    private MainActivity mainActivity;
 
     public CalenderView(Context context) {
         super(context);
@@ -20,7 +22,6 @@ public class CalenderView extends TableLayout {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-        //Log.d("wtf", event.toString());
         super.onInterceptTouchEvent(event);
         swipe(event);
         return false;
@@ -28,7 +29,6 @@ public class CalenderView extends TableLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.d("wtf", event.toString());
         super.onTouchEvent(event);
         swipe(event);
         return true;
@@ -36,25 +36,27 @@ public class CalenderView extends TableLayout {
 
     private void swipe(MotionEvent event) {
         if(event.getAction() == MotionEvent.ACTION_DOWN) {
+            if(isActionDown) return;
             x = event.getX();
             y = event.getY();
+            isActionDown = true;
         }
         else if(event.getAction() == MotionEvent.ACTION_UP) {
-            if (changeMonth(event) != 0) ((MainActivity)MainActivity.context).renderCalender(changeMonth(event), findViewById(R.id.container));
+            if(isSwipeDown(event)) mainActivity.prevMonth();
+            else if(isSwipeUp(event)) mainActivity.nextMonth();
+            isActionDown = false;
         }
-    }
-
-    private int changeMonth(MotionEvent event) {
-        if(isSwipeDown(event)) return -1;
-        else if(isSwipeUp(event)) return 1;
-        return 0;
     }
 
     private boolean isSwipeDown(MotionEvent event) {
-        return event.getX() <= x + 100 && event.getX() >= x - 100 && event.getY() > y + 100;
+        return event.getX() <= x + 250 && event.getX() >= x - 250 && event.getY() > y + 100;
     }
 
     private boolean isSwipeUp(MotionEvent event) {
-        return event.getX() <= x + 100 && event.getX() >= x - 100 && event.getY() < y - 100;
+        return event.getX() <= x + 250 && event.getX() >= x - 250 && event.getY() < y - 100;
+    }
+
+    public void setMainActivity(MainActivity mainActivity) {
+        this.mainActivity = mainActivity;
     }
 }
