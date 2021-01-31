@@ -24,8 +24,8 @@ import com.example.calender.service.ScheduleService;
 import java.util.Calendar;
 import java.util.List;
 
-// TODO 제목 수정 불가
-// TODO KEY_IS_NEW_SCHEDULE 없애기 & getIntetn() 변수로
+// TODO 삭제 후에 마크가 사라지지 않는 버그
+// TODO KEY_IS_NEW_SCHEDULE 없애기
 // TODO simpledateformat.parse() 이용
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private long selectedDate = -1;
@@ -197,6 +197,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        ((TextView)calendarView.findViewWithTag(selectedDate).findViewWithTag("schedule")).setText("");
 
         if(resultCode == Constants.RC_SUCCESS) {
             String editTextTitle = data.getStringExtra(Constants.KEY_TITLE);
