@@ -47,14 +47,27 @@ public class ScheduleActivity extends AppCompatActivity implements TextWatcher {
         editTextStart.addTextChangedListener(this);
         editTextEnd.addTextChangedListener(this);
 
-        editTextTitle.setText(getIntent().getStringExtra(Constants.KEY_TITLE));
-        editTextStart.setText(getIntent().getStringExtra(Constants.KEY_START_TIME));
-        editTextEnd.setText(getIntent().getStringExtra(Constants.KEY_END_TIME));
+        Intent intent = getIntent();
+
+        editTextTitle.setText(intent.getStringExtra(Constants.KEY_TITLE));
+        editTextStart.setText(intent.getStringExtra(Constants.KEY_START_TIME));
+        editTextEnd.setText(intent.getStringExtra(Constants.KEY_END_TIME));
 
         boolean isNewSchedule = getIntent().getBooleanExtra(Constants.KEY_IS_NEW_SCHEDULE, true);
 
+        if(!isNewSchedule) {
+            Log.d("wtf", editTextStart.getText().toString());
+
+            String startTimes[] = editTextStart.getText().toString().split(":");
+            String endTimes[] = editTextEnd.getText().toString().split(":");
+
+            startTime = Integer.parseInt(startTimes[0]) * 100 + Integer.parseInt(startTimes[1]);
+            endTime = Integer.parseInt(endTimes[0]) * 100 + Integer.parseInt(endTimes[1]);
+        }
+
         ((TextView)findViewById(R.id.explan)).setText(isNewSchedule ? "새로운 일정" : "일정 수정");
         findViewById(R.id.deleteSchedule).setVisibility(isNewSchedule ? View.INVISIBLE : View.VISIBLE);
+        updateUi();
 
         editTextStart.setOnClickListener(new View.OnClickListener() {
             @Override

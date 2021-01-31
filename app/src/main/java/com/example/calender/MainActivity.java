@@ -60,16 +60,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void nextMonth() {
         calendar.add(Calendar.MONTH, 1);
-        redraw();
+        redrawCalendar();
     }
 
     public void prevMonth() {
         calendar.add(Calendar.MONTH, -1);
-        redraw();
-    }
-
-    private void redraw() {
-
         redrawCalendar();
     }
 
