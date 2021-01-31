@@ -4,10 +4,10 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -21,7 +21,6 @@ import com.example.calender.domain.Schedule;
 import com.example.calender.helper.Constants;
 import com.example.calender.service.ScheduleService;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -32,7 +31,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private int selectedScheduleId;
     private long todayCellTag;
     private int[] scheduleIds = { R.id.schedule1, R.id.schedule2, R.id.schedule3, R.id.schedule4,
-            R.id.schedule5, R.id.schedule6, R.id.schedule7, R.id.schedule8 };
+    R.id.schedule5, R.id.schedule6, R.id.schedule7, R.id.schedule8 };
+    private Button addButton;
     private ScheduleService scheduleService;
     private static CalenderView calendarView;
     Calendar calendar;
@@ -44,10 +44,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         calendar = today();
 
+        addButton = findViewById(R.id.add);
         calendarView = findViewById(R.id.container);
         scheduleService = new ScheduleService(this);
 
-         calendarView.setMainActivity(this);
+        calendarView.setMainActivity(this);
 
         drawCalender();
         bindEvents();
@@ -57,12 +58,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void nextMonth() {
-        calendar.add(Calendar.MONTH, 1);
-        redrawCalendar();
+        redraw(1);
     }
 
     public void prevMonth() {
-        calendar.add(Calendar.MONTH, -1);
+        redraw(-1);
+    }
+
+    private void redraw(int amount) {
+        calendar.add(Calendar.MONTH, amount);
         redrawCalendar();
     }
 
@@ -72,6 +76,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void run() {
                 clearCalendar();
                 drawCalender();
+                resetCurrentSchedule();
+                markSchedule();
+                updateScheduleList();
             }
         });
     }
@@ -147,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             findViewById(scheduleIds[i]).setOnClickListener(this);
         }
 
-        findViewById(R.id.add).setOnClickListener(new View.OnClickListener() {
+        addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 resetCurrentSchedule();
@@ -165,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (selectedDate != -1) clearSelectedDay();
             selectCurrentDay(view);
 
-            findViewById(R.id.add).setEnabled(true);
+            addButton.setEnabled(true);
 
             selectedDate = (long)view.getTag();
 
@@ -277,6 +284,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void resetCurrentSchedule() {
         selectedScheduleId = -1;
+        addButton.setEnabled(false);
     }
 
     private boolean currentScheduleExists() {
