@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+// TODO 마크가 달을 바꾸고 돌아오면 사라짐
+// TODO 달 이동시: 아래 스케쥴 비우기, +버튼 비활성
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private long selectedDate = -1;
     private int selectedScheduleId;
@@ -232,7 +234,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void markSchedule() {
+    public void markSchedule() {
         clearSelectedDay();
 
         List<Schedule> schedules = scheduleService.list();

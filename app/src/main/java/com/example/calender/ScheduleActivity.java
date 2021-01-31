@@ -59,52 +59,14 @@ public class ScheduleActivity extends AppCompatActivity implements TextWatcher {
         editTextStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int selectedHour = 0;
-                int selectedMinute = 0;
-
-                String time = ((TextView)view).getText().toString();
-
-                if(time.length() != 0) {
-                    selectedHour = Integer.parseInt(time.split(":")[0]);
-                    selectedMinute = Integer.parseInt(time.split(":")[1]);
-                }
-
-                Log.d("wtf", ((TextView)view).getText().toString());
-
-                TimePickerDialog timePickerDialog = new TimePickerDialog(ScheduleActivity.this, new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        editTextStart.setText((hourOfDay < 10 ? "0" : "") + hourOfDay + ":" + (minute < 10 ? "0" : "") + minute);
-                        startTime = hourOfDay * 100 + minute;
-                        updateUi();
-                    }
-                }, selectedHour, selectedMinute, true);
-                timePickerDialog.show();
+                popupTimePicker(view, true);
             }
         });
 
         editTextEnd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int selectedHour = 0;
-                int selectedMinute = 0;
-
-                String time = ((TextView)view).getText().toString();
-
-                if(time.length() != 0) {
-                    selectedHour = Integer.parseInt(time.split(":")[0]);
-                    selectedMinute = Integer.parseInt(time.split(":")[1]);
-                }
-
-                TimePickerDialog timePickerDialog = new TimePickerDialog(ScheduleActivity.this, new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        editTextEnd.setText((hourOfDay < 10 ? "0" : "") + hourOfDay + ":" + (minute < 10 ? "0" : "") + minute);
-                        endTime = hourOfDay * 100 + minute;
-                        updateUi();
-                    }
-                }, selectedHour, selectedMinute, true);
-                timePickerDialog.show();
+                popupTimePicker(view, false);
             }
         });
 
@@ -157,6 +119,40 @@ public class ScheduleActivity extends AppCompatActivity implements TextWatcher {
 
     @Override
     public void afterTextChanged(Editable s) {}
+
+    private void popupTimePicker(View view, boolean isStartTime) {
+        int selectedHour = 0;
+        int selectedMinute = 0;
+
+        String selectedTime = ((TextView)view).getText().toString();
+
+        if(selectedTime.length() != 0) {
+            selectedHour = Integer.parseInt(selectedTime.split(":")[0]);
+            selectedMinute = Integer.parseInt(selectedTime.split(":")[1]);
+        }
+
+        //Log.d("wtf", ((TextView)view).getText().toString());
+
+        TimePickerDialog timePickerDialog = new TimePickerDialog(ScheduleActivity.this, new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                String timeToDisplay = String.format("%02d:%02d", hourOfDay, minute);
+                int time = hourOfDay * 100 + minute;
+
+                if(isStartTime) {
+                    editTextStart.setText(timeToDisplay);
+                    startTime = time;
+                }
+                else {
+                    editTextEnd.setText(timeToDisplay);
+                    endTime = time;
+                }
+
+                updateUi();
+            }
+        }, selectedHour, selectedMinute, true);
+        timePickerDialog.show();
+    }
 
     private void updateUi() {
         boolean isContradiction = startTime < endTime;
