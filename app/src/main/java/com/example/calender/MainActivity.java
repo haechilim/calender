@@ -24,8 +24,9 @@ import com.example.calender.service.ScheduleService;
 import java.util.Calendar;
 import java.util.List;
 
-// TODO 마크가 달을 바꾸고 돌아오면 사라짐
-// TODO 달 이동시: 아래 스케쥴 비우기, +버튼 비활성
+// TODO 제목 수정 불가
+// TODO KEY_IS_NEW_SCHEDULE 없애기 & getIntetn() 변수로
+// TODO simpledateformat.parse() 이용
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private long selectedDate = -1;
     private int selectedScheduleId;
@@ -58,15 +59,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void nextMonth() {
-        redraw(1);
+        calendar.add(Calendar.MONTH, 1);
+        redraw();
     }
 
     public void prevMonth() {
-        redraw(-1);
+        calendar.add(Calendar.MONTH, -1);
+        redraw();
     }
 
-    private void redraw(int amount) {
-        calendar.add(Calendar.MONTH, amount);
+    private void redraw() {
+
         redrawCalendar();
     }
 
@@ -241,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public void markSchedule() {
+    private void markSchedule() {
         clearSelectedDay();
 
         List<Schedule> schedules = scheduleService.list();
