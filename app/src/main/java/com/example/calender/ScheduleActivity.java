@@ -21,6 +21,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.calender.domain.Schedule;
 import com.example.calender.helper.Constants;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class ScheduleActivity extends AppCompatActivity implements TextWatcher {
     private EditText editTextTitle;
     private TextView editTextStart;
@@ -58,11 +62,24 @@ public class ScheduleActivity extends AppCompatActivity implements TextWatcher {
         if(!isNewSchedule) {
             Log.d("wtf", editTextStart.getText().toString());
 
-            String startTimes[] = editTextStart.getText().toString().split(":");
-            String endTimes[] = editTextEnd.getText().toString().split(":");
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
 
-            startTime = Integer.parseInt(startTimes[0]) * 100 + Integer.parseInt(startTimes[1]);
-            endTime = Integer.parseInt(endTimes[0]) * 100 + Integer.parseInt(endTimes[1]);
+            Date start = null;
+            Date end = null;
+
+            try {
+                start = simpleDateFormat.parse(editTextStart.getText().toString());
+            } catch (ParseException e) {
+                Log.d("wtf", e.toString());
+            }
+            try {
+                end = simpleDateFormat.parse(editTextEnd.getText().toString());
+            } catch (ParseException e) {
+                Log.d("wtf", e.toString());
+            }
+
+            startTime = start.getHours() * 100 + start.getMinutes();
+            endTime = end.getHours() * 100 + end.getMinutes();
         }
 
         ((TextView)findViewById(R.id.explan)).setText(isNewSchedule ? "새로운 일정" : "일정 수정");
