@@ -49,11 +49,11 @@ public class ScheduleActivity extends AppCompatActivity implements TextWatcher {
 
         Intent intent = getIntent();
 
+        boolean isNewSchedule = getIntent().getStringExtra(Constants.KEY_TITLE).isEmpty();
+
         editTextTitle.setText(intent.getStringExtra(Constants.KEY_TITLE));
         editTextStart.setText(intent.getStringExtra(Constants.KEY_START_TIME));
         editTextEnd.setText(intent.getStringExtra(Constants.KEY_END_TIME));
-
-        boolean isNewSchedule = getIntent().getBooleanExtra(Constants.KEY_IS_NEW_SCHEDULE, true);
 
         if(!isNewSchedule) {
             Log.d("wtf", editTextStart.getText().toString());

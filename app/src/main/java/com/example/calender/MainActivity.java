@@ -158,7 +158,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 resetCurrentSchedule();
 
                 Intent intent = new Intent();
-                intent.putExtra(Constants.KEY_IS_NEW_SCHEDULE, true);
+                intent.putExtra(Constants.KEY_TITLE, "");
+                intent.putExtra(Constants.KEY_START_TIME, "");
+                intent.putExtra(Constants.KEY_END_TIME, "");
                 startScheduleActivity(intent);
             }
         });
@@ -184,7 +186,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if(schedule == null) return;
 
             Intent intent = new Intent();
-            intent.putExtra(Constants.KEY_IS_NEW_SCHEDULE, false);
             intent.putExtra(Constants.KEY_TITLE, schedule.getTitle());
             intent.putExtra(Constants.KEY_START_TIME, schedule.getStartTime());
             intent.putExtra(Constants.KEY_END_TIME, schedule.getEndTime());
