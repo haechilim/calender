@@ -4,11 +4,14 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -24,18 +27,15 @@ import com.example.calender.service.ScheduleService;
 import java.util.Calendar;
 import java.util.List;
 
-// TODO 삭제 후에 마크가 사라지지 않는 버그
-// TODO KEY_IS_NEW_SCHEDULE 없애기
-// TODO simpledateformat.parse() 이용
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private long selectedDate = -1;
     private int selectedScheduleId;
     private long todayCellTag;
-    private int[] scheduleIds = { R.id.schedule1, R.id.schedule2, R.id.schedule3, R.id.schedule4,
-    R.id.schedule5, R.id.schedule6, R.id.schedule7, R.id.schedule8 };
+    private ListView scheduleList;
     private Button addButton;
     private ScheduleService scheduleService;
     private static CalenderView calendarView;
+    private ScheduleAdapter scheduleAdapter;
     Calendar calendar;
 
     @Override
@@ -44,12 +44,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         calendar = today();
+        scheduleAdapter = new ScheduleAdapter(this);
 
         addButton = findViewById(R.id.add);
         calendarView = findViewById(R.id.container);
         scheduleService = new ScheduleService(this);
+        scheduleList = findViewById(R.id.scheduleList);
 
         calendarView.setMainActivity(this);
+        scheduleList.setAdapter(scheduleAdapter);
 
         drawCalender();
         bindEvents();
@@ -148,9 +151,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void bindEvents() {
-        for(int i = 0; i < scheduleIds.length; i++) {
-            findViewById(scheduleIds[i]).setOnClickListener(this);
-        }
+        scheduleList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if(view.getTag() == null) return;
+
+                Schedule schedule = scheduleService.findById((int)view.getTag());
+
+                if(schedule == null) return;
+
+                Intent intent = new Intent();
+                intent.putExtra(Constants.KEY_TITLE, schedule.getTitle());
+                intent.putExtra(Constants.KEY_START_TIME, schedule.getStartTime());
+                intent.putExtra(Constants.KEY_END_TIME, schedule.getEndTime());
+                startScheduleActivity(intent);
+
+                selectedScheduleId = schedule.getId();
+            }
+        });
 
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -168,31 +186,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
-        if(view.findViewWithTag("day") != null) {
-            if (selectedDate != -1) clearSelectedDay();
-            selectCurrentDay(view);
+        if (selectedDate != -1) clearSelectedDay();
+        selectCurrentDay(view);
 
-            addButton.setEnabled(true);
+        addButton.setEnabled(true);
 
-            selectedDate = (long)view.getTag();
+        selectedDate = (long)view.getTag();
 
-            updateScheduleList();
-        }
-        else if(view.findViewWithTag("title") != null) {
-            if(view.getTag() == null) return;
-
-            Schedule schedule = scheduleService.findById((int)view.getTag());
-
-            if(schedule == null) return;
-
-            Intent intent = new Intent();
-            intent.putExtra(Constants.KEY_TITLE, schedule.getTitle());
-            intent.putExtra(Constants.KEY_START_TIME, schedule.getStartTime());
-            intent.putExtra(Constants.KEY_END_TIME, schedule.getEndTime());
-            startScheduleActivity(intent);
-
-            selectedScheduleId = schedule.getId();
-        }
+        updateScheduleList();
     }
 
     @Override
@@ -225,21 +226,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void updateScheduleList() {
+        scheduleAdapter.clear();
+
         List<Schedule> schedules = scheduleService.findByDate(selectedDate);
 
-        resetScheduleList(scheduleIds);
-
         for(int i = 0; i < schedules.size(); i++) {
-            if(i >= scheduleIds.length) break;
-
             Schedule schedule = schedules.get(i);
-            View view = findViewById(scheduleIds[i]);
 
-            view.setTag(schedule.getId());
-            ((TextView) view.findViewWithTag("title")).setText(schedule.getTitle());
-            ((TextView) view.findViewWithTag("startTime")).setText(schedule.getStartTime());
-            ((TextView) view.findViewWithTag("endTime")).setText(schedule.getEndTime());
+            scheduleAdapter.add(schedule.getTitle(), schedule.getStartTime(), schedule.getEndTime());
         }
+
+        scheduleAdapter.notifyDataSetChanged();
     }
 
     private void markSchedule() {

@@ -24,6 +24,12 @@ public class Schedule {
         this.endTime = endTime;
     }
 
+    public Schedule(String title, String startTime, String endTime) {
+        this.title = title;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
+
     public int getId() {
         return id;
     }
